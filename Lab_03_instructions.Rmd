@@ -32,6 +32,9 @@ source('scripts/modtran.R', chdir = T)
 ```
 # Instructions
 
+It would be good to print these instructions and bring them to lab on 
+Monday, or else to have the PDF with the instructions handy during lab.
+
 For these exercises, I recommend that you work on them with the interactive
 web-based MODTRAN models to get a feel for how the models apply to the 
 exercise.
@@ -232,9 +235,107 @@ run_modtran(filename = "data/modtran_double_co2_warming.txt", co2_ppm = 800, del
 plot_modtran("data/modtran_double_co2_warming.txt", i_out_ref = baseline_i_out, delta_t = 0.76)
 ```
 
-# Chapter 4 Exercises
+# A few new R functions that we will use in this lab:
 
-## Exercise 4.1: Methane
+## Iterating over a series
+
+Sometimes you want to repeat something in R, executing the same commands for
+many different values of a variable. We can do this with the `for` command:
+
+```{r loop, include = TRUE, fig.height=3, fig.width=3}
+df = tibble(x = 1:10)
+
+for (i in 1:4) {
+  p = ggplot(df, aes(x = x, y = x^i)) + 
+    geom_point() + geom_line() +
+    labs(x = "x", y = str_c("x to the power ", i))
+  plot(p)
+}
+```
+
+## Combining character variables
+
+Sometimes we might want to make a label or a filename by combining several 
+variables. R has many functions for manipulating character variables. Two 
+functions that we can use are `str_c`, from the `stringr` package and `paste0`,
+from basic R. Both of these work pretty much the same way:
+
+```{r combining_strings, include=TRUE}
+print( paste0("coco", "nut"))
+print( str_c("infra", "red"))
+print( str_c("one", "two", sep = "."))
+print( str_c(10, " km"))
+
+x = 50
+
+print(str_c(x, " Watts"))
+```
+
+## Calculating with leads and lags
+
+Sometimes, when we are using `mutate` with a data tibble, we might want to
+look at differences between a row and the row before or after it in the
+tibble. We can do this with the `lead` and `lag` functions:
+
+In the examnple below, the column `u` gets the value of the current row of
+`y` minus the previous row of `y`, and the column `v` gets the value of the
+next row of `y` minus the current row of `y`. Note that where there isn't a
+previous row, `lag` returns `NA` (missing value), and similarly for `lead`
+when there isn't a next row.
+
+```{r lead.lag, include=TRUE}
+tbl = tibble(x = 0:5, y = x^2)
+
+tbl = tbl %>% mutate(u = y - lag(y), v = lead(y) - y)
+tbl
+```
+
+If you want to lead or lag by more than one row, you can just say, `lag(y, 5)`
+to get the value of `y` 5 rows before the current one.
+
+```{r lead.lag.2, include = TRUE}
+
+tbl = tibble(x = 1:10)
+
+tbl = tbl %>% mutate(before = lag(x), after = lead(x), before.2 = lag(x, 2), after.3 = lead(x, 3))
+
+tbl
+```
+
+## Modifying _x_ and _y_ axes in `ggplot`
+
+It is easy to modify the _x_ or _y_ axis in `ggplot`. For instance, if
+you want to put specific limits on the axis, or change where the labels
+go, you can use `scale_x_continuous` or `scale_y_continuous`:
+
+```{r simple_plot, include=TRUE, fig.height=3, fig.width=4}
+tbl = tibble(x = 1:200, y = (x / 100)^5)
+
+ggplot(tbl, aes(x = x, y = y)) + geom_line()
+```
+
+```{r scale_x, include=TRUE, warning=FALSE, fig.height=3, fig.width=4}
+ggplot(tbl, aes(x = x, y = y)) + geom_line() +
+  scale_x_continuous(limits = c(0,150), breaks = seq(0, 150, 25)) +
+  scale_y_continuous(limits = c(0,10))
+```
+
+```{r log_plot, include=TRUE, fig.height=3, fig.width=4}
+tbl = tibble(x = 1:200, y = 5 - 2 * x + 3 * x^2)
+
+# Note that in R when we are typing numbers, we can express scientific notation 
+# as 1E6 for 1,000,000 2.67E-3 for 0.00267
+
+ggplot(tbl, aes(x = x, y = y)) + geom_line() +
+  scale_x_log10(limits = c(1,1000)) +
+  scale_y_log10(limits = c(1,1E6))
+```
+
+# Exercises for Lab #3
+
+## Chapter 4 Exercises
+
+### Exercise 4.1: Methane
 
 Methane has a current concentration of 1.7 ppm in the atmosphere and
 is doubling at a faster rate than CO~2~.
@@ -247,19 +348,119 @@ b) Where in the spectrum does methane absorb? What concentration does it take to
   begin to saturate the absorption in this band? Explain what you are looking 
   at to judge when the gas is saturated.
 
+    **Suggestion:**
+    
+    * Run MODTRAN with no greenhouse gases, except 0.4 ppm of methane.
+    * Run MODTRAN several times, successively doubling the amount of methane:
+      0.4 ppm, 0.8 ppm, 1.6 ppm, ... 102.4 ppm.
+      
+        Hint: You can use the following R commands to do this:
+        ```
+        methane_data = tibble() # create a blank data tibble
+    
+        for (x in 0:11) {
+          # Repeat everything between the braces "{}" for x taking on
+          # each value in 0, 1, 2, ..., 11.
+          
+          p_methane = 0.4 * (2^x) # methane concentration is 0.4 times 2 to the 
+                                  # power of x.
+          
+          # Create a character variable that will be a file name of the form
+          # "data/methane_xx_x.txt", where xx_x is the methane concentration,
+          # with an underscore for the decimal point.
+          file_name = formatC(p_methane, digits = 1, decimal.mark = "_", 
+                              format = "f") %>%
+                      str_c('methane_', ., ".txt") %>%
+                      file.path("data", .)
+    
+          # Now run MODTRAN
+          run_modtran(file_name, co2_ppm = 0, ch4_ppm = p_methane, 
+                      trop_o3_ppb = 0, strat_o3_scale = 0, h2o_scale = 0, 
+                      freon_scale = 0, 
+                      delta_t = 0, h2o_fixed = "vapor pressure",
+                      atmosphere = "tropical", clouds = "none", 
+                      altitude_km = 70, looking = "down")
+    
+          # Read the MODTRAN results into R
+          results = read_modtran(file_name)
+    
+          # Create a data tibble with columns for the methane concentration
+          # and I out, and append it to the end of the tibble methane_data
+          df = tibble(methane = results$ch4, i_out = results$i_out)
+          methane_data = bind_rows(methane_data, df)
+        }
+        ```
+        This will run MODTRAN for the different values of methane concentration and
+        save them in the "data" folder as "methane_0_4.txt", "methane_0_8.txt", 
+        "methane_1_6.txt", and so forth, up to "methane_819_2.txt", and also
+        create a data tibble `methane_data` with a list of methane concentrations
+        and the corresponding $I_{\text{out}}$.
+    
+    *   Use `mutate` to add a new column `change`, which contains the change in 
+        $I_{\text{out}}$ between the previous row and this one. You can use the
+        `lag` command to calculate this, as described above in the "new R
+        functions" section.
+        ```
+        methane_data = methane_data %>% mutate(change = i_out - lag(i_out))
+        ```
+        
+        Now plot `i_out` versus the methane concentration several ways:
+        
+        * First, just plot `i_out` versus `methane`:
+          ```
+          ggplot(methane_data, aes(x = methane, y = i_out)) + 
+            geom_point(size = 2) +
+            geom_line(size = 1) +
+            labs() # add parameters to labs to label your axes.
+          ```
+    
+        * Next, plot the same data, but with a logarithmic _x_-axis (use
+          `scale_x_log10`, as described above in the "New R Functions" section)
+    
+        * Next, plot `methane_concentration`, but assign the column `change`
+          to the _y_ axis, instead of the column `i_out`.
+      
+        * Think back to the slides I showed in class #6 about identifying band
+          saturation. Do you see a place where the successive changes in `i_out` 
+          flatten out?  Estimate the concentration of methane where absorption
+          saturates.
+
 c) Would a doubling of methane have as great an impact on the heat balance as a 
    doubling of CO~2~?
+
+    **Suggestion:** 
+    
+    * Run MODTRAN in its default configuration (400 ppm CO~2~ and 1.7 ppm methane)
+    * Run it again with 10 ppm of extra methane
+    * Run it again with the default methane (1.7 ppm) but 10 ppm extra CO~2~.
+    * Compare $I_{\text{out}}$ for the three runs.
 
 d) What is the "equivalent CO~2~" of doubling atmospheric methane? That is to say,
    how many ppm of CO~2~ would lead to the same change in outgoing IR radiation
    energy flux as doubling methane? What is the ratio of ppm CO~2~ change to 
    ppm methane change?
 
+    **Suggestion:** This is easier to do interactively with the web-based 
+    interface to MODTRAN than by running it in R.
+    
+    * Run MODTRAN in its default configuration (400 ppm CO~2~ and 1.7 ppm methane)
+    * Run MODTRAN again with the methane doubled. Note $I_{\text{out}}$. 
+    * Return methane to the default value (1.7 ppm), and adjust CO~2~ until
+      $I_{\text{out}}$ is the same as it was for the doubled methane.
+      Note what concentration of CO~2~ does this.
+    * Now you can use R to run MODTRAN with doubled methane and with the equivalent 
+      concentration of CO~2~, and save these runs to the disk.
 
-## Exercise 4.2: CO~2~ (Graduate students only)
+### Exercise 4.2: CO~2~ (Graduate students only)
 
 a) Is the direct effect of increasing CO~2~ on the energy output at the top of
    the atmosphere larger in high latitudes or in the tropics?
+   Compare the change in $I_{\text{out}}$ from doubling CO~2~ with
+   the atmosphere set to `tropical`, `midlatitude summer`, and 
+   `subartcic summer`.
+   
+    For each atmosphere, first record $I_{\text{out}}$ with CO~2~ at 400 ppm
+    and then record the change when you increase CO~2~ to 800 ppm.
 
 b) Set pCO~2~ to an absurdly high value of 10,000 ppm. You will see a spike
    in the CO~2~ absorption band. What temperature is this light coming from? 
@@ -268,7 +469,7 @@ b) Set pCO~2~ to an absurdly high value of 10,000 ppm. You will see a spike
     Now turn on clouds and run the model again. Explain what you see.
     Why are night-time temperatures warmer when there are clouds?
 
-## Exercise 4.3: Water vapor
+### Exercise 4.3: Water vapor
 
 Our theory of climate presumes that an increase in the temperature at ground
 level will lead to an increase in the outgoing IR energy flux at the top of the
@@ -278,6 +479,12 @@ atmosphere.
 a) How much extra outgoing IR would you get by raising the temperature of the 
    ground by 5&deg;C? What effect does the ground temperature have on the 
    shape of the outgoing IR spectrum and why?
+   
+    * Note the $I_{\text{out}}$ for the default conditions. Then
+      set `delta_t` to 5 and run MODTRAN again, and note the new value
+      of $I_{\text{out}}$.
+      
+    * Plot the spectrum for both runs and compare.
 
 b) More water can evaporate into warm air than into cool air. Change the
    model settings to hold the water vapor at constant relative humidity 
@@ -306,9 +513,9 @@ c) Now see this effect in another way.
       to the warming when you hold water vapor pressure fixed is the 
       feedback factor for water vapor. What is it?
 
-# Chapter 5 Exercise
+## Chapter 5 Exercise
 
-## Exercise 5.2: Skin Height
+### Exercise 5.2: Skin Height
 
 a) Run the MODTRAN model in using the "Tropical" atmosphere, without clouds, and with
    present-day pCO~2~ (400 ppm). Use the ground temperature reported by the model to calculate
@@ -348,9 +555,9 @@ d) Put the CO~2~ back to today's value, but add cirrus clouds, using the
     Did the clouds or the doubled CO~2~ have a greater effect on the
     skin height?
 
-# Chapter 7 Exercise
+## Chapter 7 Exercise
 
-## Exercise 7.2: Clouds and Infrared.
+### Exercise 7.2: Clouds and Infrared.
 
 **Note:** this exercise only considers the effect of clouds on longwave
 radiation and ignores the effect of clouds on albedo, which is also important.
