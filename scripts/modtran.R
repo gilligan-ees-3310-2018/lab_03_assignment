@@ -189,6 +189,10 @@ read_modtran_profile <- function(filename, text = NULL) {
   profile
 }
 
+extract_tropopause <- function(profile) {
+  profile %>% filter(T <= lead(T)) %>% top_n(-1, Z)
+}
+
 read_modtran <- function(filename, text = NULL, scale_factor = 3.14E+4) {
   if (missing(filename) && ! is.null(text)) {
     lines <- text %>% str_split("\n") %>% unlist()
@@ -198,6 +202,9 @@ read_modtran <- function(filename, text = NULL, scale_factor = 3.14E+4) {
     close(f)
   }
   profile <- read_modtran_profile(text = lines)
+  tropopause <- extract_tropopause(profile)
+  t_ground = profile$T[1]
+
   im <- str_detect(lines, "^0INTEGRATED RADIANCE") %>% which()
   target <- lines[im[1]]
   x <- str_extract(target, "[0-9]\\.[0-9]*E[+-][0-9]+")
@@ -238,7 +245,10 @@ read_modtran <- function(filename, text = NULL, scale_factor = 3.14E+4) {
                  co2=co2, ch4=ch4,
                  i_out = integrated_radiance,
                  alt = altitude, sensor_direction = direction,
-                 profile = profile))
+                 profile = profile,
+                 h_tropo = tropopause$Z,
+                 t_tropo = tropopause$T,
+                 t_ground = t_ground))
 }
 
 plot_modtran <- function(filename, descr = NULL, i_out_ref = NA,
