@@ -21,7 +21,7 @@ data_dir = "data"
 script_dir = "scripts"
 
 library(pacman)
-p_load(zoo, xml2, tidyverse, stringr)
+p_load(xml2, tidyverse, stringr)
 
 theme_set(theme_bw(base_size = 15))
 
@@ -183,7 +183,10 @@ which loads a script with the following functions:
     
     * `sensor_direction` is the direction of the virtual sensor ("up" or "down").
     
-* Some handy conversion functions are:
+### Converting temperature units    
+    
+* Some handy functions for converting temperature measurements
+  from one unit of measurement to another are:
 
     * `ktof(T)` converts `T` from Kelvin to Fahrenheit.
     
@@ -196,6 +199,33 @@ which loads a script with the following functions:
     * `ctof(T)` converts `T` from Celsius to Fahrenheit.
     
     * `ftoc(T)` converts `T` from Fahrenheit to Celsius.
+    
+    But be aware that if you want to convert the _difference between two
+    temperatures_, you need to convert the temperatures and then take the
+    difference:
+    
+```{r delta_temperature}
+    t1_k = 254 # Kelvin temperature
+    t2_k = 288 # Kelvin temperature
+    delta_t_k = t2_k - t1_k # Difference in temeprature, in Kelvin
+
+    delta_t_k
+    
+    t1_f = ktof(t1_k) # Fahrenheit temperatures
+    t2_f = ktof(t2_k)
+    
+    t1_f
+    t2_f
+    
+    delta_t_f = t2_f - t1_f # Difference in temperature, in Fahrenheit
+    
+    delta_t_f
+    
+    # This will give the wrong answer for the 
+    # temperature difference in Fahrenheit!
+    ktof(delta_t_k)
+```
+You see that $`r t2_f` - `r t1_f` \neq `r ktof(delta_t_k)`$.
 
 * Some variables that I have defined for you are:
 
@@ -255,21 +285,35 @@ for (i in 1:4) {
 
 ## Combining character variables
 
-Sometimes we might want to make a label or a filename by combining several 
-variables. R has many functions for manipulating character variables. Two 
-functions that we can use are `str_c`, from the `stringr` package and `paste0`,
-from basic R. Both of these work pretty much the same way:
+R has many functions for manipulating text. When R stores text, it stores it
+in character variables (these are also sometimes called "strings" because
+text is like a string of characters).
+For instance, we might want to make a label or a filename by combining several 
+variables. 
+Three functions that we can use are `str_c`, from the `stringr` package and 
+`paste` and `paste0`,
+from basic R. All of these work pretty much the same way:
 
 ```{r combining_strings, include=TRUE}
-print( paste0("coco", "nut"))
-print( str_c("infra", "red"))
-print( str_c("one", "two", sep = "."))
-print( str_c(10, " km"))
+print(paste("mail", "box"))
+print(paste("mail", "box", sep = ""))
+print(paste0("infra", "red"))
+print(str_c("infra", "red"))
+print(str_c("infra", "red", sep = "-"))
+print(str_c("one", "two", "three", "four", sep = ", "))
+print(str_c(10, " km"))
 
 x = 50
 
 print(str_c(x, " Watts"))
+print(str_c(x, "Watts", sep = " "))
 ```
+Notice how `paste` puts spaces between the strings when it combines them unless
+you specify that `sep` (the separator) should be something different.
+`paste0` works just like `paste`, except that it doesn't have a separator, so
+the variables are combined without an extra space.
+`str_c` is like `paste0`, except that you can specify a separator if you do
+want something in between the different variables.
 
 ## Calculating with leads and lags
 
@@ -297,7 +341,8 @@ to get the value of `y` 5 rows before the current one.
 
 tbl = tibble(x = 1:10)
 
-tbl = tbl %>% mutate(before = lag(x), after = lead(x), before.2 = lag(x, 2), after.3 = lead(x, 3))
+tbl = tbl %>% mutate(before = lag(x), after = lead(x), 
+                     before.2 = lag(x, 2), after.3 = lead(x, 3))
 
 tbl
 ```
@@ -554,39 +599,3 @@ d) Put the CO~2~ back to today's value, but add cirrus clouds, using the
     What is the new skin temperature? What is the new skin height?
     Did the clouds or the doubled CO~2~ have a greater effect on the
     skin height?
-
-## Chapter 7 Exercise
-
-### Exercise 7.2: Clouds and Infrared.
-
-**Note:** this exercise only considers the effect of clouds on longwave
-radiation and ignores the effect of clouds on albedo, which is also important.
-
-
-a) Run the MODTRAN model with present-day CO~2~ (400 ppm) and a tropical atmosphere. 
-   Plot the outgoing infrared spectrum. 
-   
-    Now run the model with altostratus clouds and plot the new spectrum.
-    
-    Now run the model with stratus clouds and plot the new spectrum.
-
-    Describe the important differences between the spectra for the three cases.
-    Describe the differences in the intensity of outgoing infrared radiation
-    for the three cases.
-
-    How do the three spectra compare for the 700 cm^-1^ band (where CO~2~ absorbs
-    strongly) and the 900 cm^-1^ band (in the atmospheric window)?
-
-    Which kind of cloud has the greatest impact on outgoing infrared light?
-    Why?
-
-b) Now set the sensor at an altitude of 0 km and make it look up. This means
-   you are looking at the infrared coming down from the atmosphere to the ground
-   instead of going out to space from the top of the atmosphere.
-
-    Run MODTRAN first with no clouds, then with three kinds of clouds:
-    standard cirrus, altostratus, and stratus.
-   
-    For each run, plot the downward infrared spectrum.
-    Describe how the spectra compare.
-    What does this suggest about how clouds affect the ground temperature?
