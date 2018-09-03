@@ -12,7 +12,7 @@ use in procesing and graphing data for this lab.)
 This file also has the exercises you will do for this lab.
 
 2. When you come to lab, you will work through the exercises, and you will
-edit the file `lab_03_exercises.Rmd` to write your answers and show your
+edit the file `Lab_03_exercises.Rmd` to write your answers and show your
 work.
 
 ## Instructions:
@@ -27,8 +27,8 @@ work.
   and the new PDF files) to your local git repository.
 * Push the changes from your local git repository to github.
 
-    The last changes that you push before the due date (9:00 AM on Friday 
-    Sept. 15) will be graded.
+    The last changes that you push before the due date 
+    (9:00 AM on Monday Sept. 17) will be graded.
 
 I advise using git to commit changes frequently as you work and push those commits
 to github.
