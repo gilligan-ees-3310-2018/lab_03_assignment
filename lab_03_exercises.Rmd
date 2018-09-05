@@ -14,17 +14,17 @@ knitr::opts_chunk$set(echo = TRUE)
 # This section loads necessary R libraries and sources scripts that define 
 # useful functions format_md.
 # 
-data_dir = "data"
-script_dir = "scripts"
+data_dir = "_data"
+script_dir = "_scripts"
 
 library(pacman)
 p_load(zoo, xml2, tidyverse, stringr)
 
 theme_set(theme_bw(base_size = 15))
 
-source('scripts/utils.R', chdir = T)
-source('scripts/format_md.R', chdir = T)
-source('scripts/modtran.R', chdir = T)
+source(file.path(script_dir, 'utils.R'), chdir = T)
+source(file.path(script_dir, 'format_md.R'), chdir = T)
+source(file.path(script_dir, 'modtran.R'), chdir = T)
 
 ```
 # Chapter 4 Exercises
