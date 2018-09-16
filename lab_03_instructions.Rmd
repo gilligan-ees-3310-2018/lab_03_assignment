@@ -256,13 +256,17 @@ plot_modtran(file.path(data_dir, "modtran_baseline.txt"))
 ```
 
 ```{r double_co2, include=TRUE, message=FALSE, warning=FALSE}
-run_modtran(filename = file.path(data_dir, "modtran_double_co2.txt"), co2_ppm = 800)
-plot_modtran(file.path(data_dir, "modtran_double_co2.txt"), i_out_ref = baseline_i_out, delta_t = 0)
+run_modtran(filename = file.path(data_dir, "modtran_double_co2.txt"), 
+            co2_ppm = 800)
+plot_modtran(file.path(data_dir, "modtran_double_co2.txt"), 
+             i_out_ref = baseline_i_out, delta_t = 0)
 ```
 
 ```{r double_co2_warming, include=TRUE, message=FALSE, warning=FALSE}
-run_modtran(filename = file.path(data_dir, "modtran_double_co2_warming.txt"), co2_ppm = 800, delta_t = 0.76)
-plot_modtran(file.path(data_dir, "modtran_double_co2_warming.txt"), i_out_ref = baseline_i_out, delta_t = 0.76)
+run_modtran(filename = file.path(data_dir, "modtran_double_co2_warming.txt"), 
+            co2_ppm = 800, delta_t = 0.76)
+plot_modtran(file.path(data_dir, "modtran_double_co2_warming.txt"), 
+             i_out_ref = baseline_i_out, delta_t = 0.76)
 ```
 
 # A few new R functions that we will use in this lab:
