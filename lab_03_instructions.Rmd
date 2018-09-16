@@ -400,6 +400,7 @@ b) Where in the spectrum does methane absorb? What concentration does it take to
       0.4 ppm, 0.8 ppm, 1.6 ppm, ... 102.4 ppm.
       
         Hint: You can use the following R commands to do this:
+
         ```
         methane_data = tibble() # create a blank data tibble
     
@@ -435,6 +436,7 @@ b) Where in the spectrum does methane absorb? What concentration does it take to
           methane_data = bind_rows(methane_data, df)
         }
         ```
+        
         This will run MODTRAN for the different values of methane concentration and
         save them in the "_data" folder as "methane_0_4.txt", "methane_0_8.txt", 
         "methane_1_6.txt", and so forth, up to "methane_819_2.txt", and also
@@ -567,7 +569,7 @@ a) Run the MODTRAN model in using the "Tropical" atmosphere, without clouds, and
    $\varepsilon \sigma T_{\text{ground}}^4$, the heat flux emitted by the ground.
    Assume $\varepsilon = 1$, and I have already provided the value of the 
    Stefan-Boltzmann constant $\sigma$, as the R variable `sigma_sb`,
-   which equals `r format_md(sigma_sb, digits = 3)`.
+   which equals `r format_md(sigma_sb, digits = 3, format = "scientific")`.
    (I defined it in the script "utils.R", which I loaded in the "setup" chunk
    in the RMarkdown document).
 

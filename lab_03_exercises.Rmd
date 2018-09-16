@@ -4,8 +4,8 @@ subtitle: "Exercises with the MODTRAN Model"
 author: "put your name here"
 date: 'Lab: Mon. Sept. 10. Due: Mon. Sept. 17.'
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 ```{r setup, include=FALSE}
 knitr::knit_hooks$set(inline = function(x) { knitr:::format_sci(x, 'md')})
@@ -201,7 +201,7 @@ a) Run the MODTRAN model in using the "Tropical" atmosphere, without clouds, and
    $\varepsilon \sigma T_{\text{ground}}^4$, the heat flux emitted by the ground.
    Assume $\varepsilon = 1$, and I have already provided the value of the 
    Stefan-Boltzmann constant $\sigma$, as the R variable `sigma_sb`,
-   which equals `r format_md(sigma_sb, digits = 3)`.
+   which equals `r format_md(sigma_sb, digits = 3, format = "scientific")`.
    (I defined it in the script "utils.R", which I loaded in the "setup" chunk
    in the RMarkdown document).
 
